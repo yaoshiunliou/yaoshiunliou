@@ -1,1 +1,94 @@
+import pygame
+import random
+import math
 
+# 初始化 pygame
+pygame.init()
+
+# 設置遊戲視窗大小
+WIDTH, HEIGHT = 800, 600
+window = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("貓抓老鼠")
+
+# 顏色
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+
+# 貓與老鼠的屬性
+CAT_SIZE = 40
+MOUSE_SIZE = 20
+cat_speed = 2
+mouse_speed = 5
+
+# 隨機位置生成貓與老鼠的初始位置
+cat_x, cat_y = random.randint(0, WIDTH-CAT_SIZE), random.randint(0, HEIGHT-CAT_SIZE)
+mouse_x, mouse_y = random.randint(0, WIDTH-MOUSE_SIZE), random.randint(0, HEIGHT-MOUSE_SIZE)
+
+# 遊戲是否結束
+game_over = False
+
+# 字體設置
+font = pygame.font.SysFont(None, 55)
+
+# 計算貓與老鼠之間的距離
+def distance(x1, y1, x2, y2):
+    return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+
+# 顯示遊戲結束訊息
+def show_game_over():
+    text = font.render('遊戲結束!', True, RED)
+    window.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - text.get_height() // 2))
+
+# 遊戲主循環
+running = True
+while running:
+    # 填充背景
+    window.fill(WHITE)
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    if not game_over:
+        # 玩家用箭頭鍵控制老鼠移動
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT] and mouse_x > 0:
+            mouse_x -= mouse_speed
+        if keys[pygame.K_RIGHT] and mouse_x < WIDTH - MOUSE_SIZE:
+            mouse_x += mouse_speed
+        if keys[pygame.K_UP] and mouse_y > 0:
+            mouse_y -= mouse_speed
+        if keys[pygame.K_DOWN] and mouse_y < HEIGHT - MOUSE_SIZE:
+            mouse_y += mouse_speed
+
+        # 貓自動追蹤老鼠
+        if cat_x < mouse_x:
+            cat_x += cat_speed
+        if cat_x > mouse_x:
+            cat_x -= cat_speed
+        if cat_y < mouse_y:
+            cat_y += cat_speed
+        if cat_y > mouse_y:
+            cat_y -= cat_speed
+
+        # 畫出貓與老鼠
+        pygame.draw.rect(window, BLACK, (cat_x, cat_y, CAT_SIZE, CAT_SIZE))  # 畫出貓
+        pygame.draw.rect(window, RED, (mouse_x, mouse_y, MOUSE_SIZE, MOUSE_SIZE))  # 畫出老鼠
+
+        # 檢查貓是否抓到老鼠
+        if distance(cat_x, cat_y, mouse_x, mouse_y) < (CAT_SIZE + MOUSE_SIZE) // 2:
+            game_over = True
+
+    else:
+        # 遊戲結束，顯示訊息
+        show_game_over()
+
+    # 更新畫面
+    pygame.display.update()
+
+    # 設置 FPS
+    pygame.time.Clock().tick(60)
+
+# 關閉遊戲
+pygame.quit()
